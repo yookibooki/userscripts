@@ -25,6 +25,9 @@
 ### 🔄 [Google Search Site Switch](https://raw.githubusercontent.com/yookibooki/userscripts/main/google-search-site-switch/user.js)  
 ▸ Adds quick-search links to rival engines (Yandex, Bing, DuckDuckGo) on Google results pages  
 
+### 📰 [Medium to Freedium Redirector](https://raw.githubusercontent.com/yookibooki/userscripts/main/medium-to-freedium-redirector/user.js)
+▸ Redirects Medium articles to Freedium, allowing you to read articles without a subscription.
+
 ---
 
 ## 🛠️ Userscript Managers  
