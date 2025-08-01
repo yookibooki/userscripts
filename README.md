@@ -28,6 +28,12 @@
 ### 📰 [Medium to Freedium Redirector](https://raw.githubusercontent.com/yookibooki/userscripts/main/medium-to-freedium-redirector/user.js)
 ▸ Redirects Medium articles to Freedium, allowing you to read articles without a subscription.
 
+### 📖 [Jina AI Reader Redirect](https://raw.githubusercontent.com/yookibooki/userscripts/main/jina-ai-reader-redirect/user.js)
+▸ Press `Ctrl+Alt+Q` to redirect any webpage to its Jina AI Reader version for clean, readable content.
+
+### 💾 [VS Code Extension Downloader](https://raw.githubusercontent.com/yookibooki/userscripts/main/vscode-extension-downloader/user.js)
+▸ Downloads .vsix packages directly from the VS Code Marketplace for offline installation.
+
 ---
 
 ## 🛠️ Userscript Managers  
