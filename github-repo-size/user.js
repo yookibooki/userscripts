@@ -39,29 +39,24 @@
 (function() {
     'use strict';
 
-    // --- Configuration ---
     const CACHE_KEY = 'repoSizeCache';
     const PAT_KEY = 'github_pat_repo_size';
-    const CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+    const CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000;
     const GITHUB_API_BASE = 'https://api.github.com';
     const TARGET_ELEMENT_SELECTOR = '#repo-title-component > span.Label.Label--secondary';
     const DISPLAY_ELEMENT_ID = 'repo-size-checker-display';
 
-    // --- Styles ---
     const STYLE_LOADING = 'color: orange; margin-left: 6px; font-size: 12px; font-weight: 600;';
     const STYLE_ERROR = 'color: red; margin-left: 6px; font-size: 12px; font-weight: 600;';
     const STYLE_SIZE = 'color: #6a737d; margin-left: 6px; font-size: 12px; font-weight: 600;';
 
-    // --- State Variables ---
-    let currentRepoKey = null; // e.g., 'user/repo'. Used to track the currently processed page.
+    let currentRepoKey = null;
     let pat = null;
     let observer = null;
 
-    // --- Helper Functions ---
     function log(...args) { console.log('[RepoSizeChecker]', ...args); }
 
     function getRepoInfoFromUrl() {
-        // This regex now only matches the root, /tree, /find, etc. to be more precise.
         const match = window.location.pathname.match(/^\/([^/]+)\/([^/]+)(?:\/?$|\/(?:tree|find|graphs|network|releases)(?:\/.*)?$)/);
         if (match && match[1] && match[2] && document.querySelector('#repository-container-header')) {
             return { owner: match[1], repo: match[2], key: `${match[1]}/${match[2]}` };
@@ -109,7 +104,6 @@
         return setPAT(newPat);
     }
 
-    // --- Cache Functions ---
     function getCache() {
         try { return JSON.parse(GM_getValue(CACHE_KEY, '{}')); }
         catch (e) { return {}; }
@@ -122,7 +116,6 @@
         } catch (e) { log('Error writing cache', e); }
     }
 
-    // --- DOM Functions ---
     function getDisplayElement() {
         let element = document.getElementById(DISPLAY_ELEMENT_ID);
         if (element) return element;
@@ -145,7 +138,6 @@
         displayElement.style.cssText = style;
     }
 
-    // --- API Functions ---
     function makeApiRequest(url) {
         return new Promise((resolve, reject) => {
             const currentPat = getPAT();
@@ -189,17 +181,12 @@
         return { size: totalSize, truncated: !!treeData.truncated };
     }
 
-    // --- CORE LOGIC ---
     async function fetchAndDisplaySize(repoInfo) {
         updateDisplay('loading', STYLE_LOADING, true);
-
-        // 1. Check for PAT
         if (!getPAT()) {
             promptForPAT();
             return;
         }
-
-        // 2. Caching Logic
         const cache = getCache();
         const cachedData = cache[repoInfo.key];
         const now = Date.now();
@@ -222,7 +209,6 @@
                 return;
             }
 
-            // 3. Fetch new data
             log('Fetching new repository size.');
             updateDisplay('loading', STYLE_LOADING, true);
             const { size, truncated } = await fetchRepoTreeSize(repoInfo.owner, repoInfo.repo, latestSha);
@@ -241,47 +227,32 @@
 
     function run() {
         const repoInfo = getRepoInfoFromUrl();
-
-        // Condition 1: Are we on a valid repo page?
         if (!repoInfo) {
             if (currentRepoKey) {
                 log('Navigated away from repo page. Resetting state.');
-                currentRepoKey = null; // Reset state when leaving a repo page
+                currentRepoKey = null;
             }
             return;
         }
-
-        // Condition 2: Is this the same page we have already processed?
         if (currentRepoKey === repoInfo.key) {
-            return; // Already handled, do nothing.
-        }
-
-        // Condition 3: Is the DOM ready for us to inject our element?
-        if (!document.querySelector(TARGET_ELEMENT_SELECTOR)) {
-            // Not ready yet. The observer will trigger `run()` again later.
             return;
         }
-
-        // --- All checks passed! ---
-        // We are on a new, ready-to-process repository page.
+        if (!document.querySelector(TARGET_ELEMENT_SELECTOR)) {
+            return;
+        }
         log(`New repo page detected and ready: ${repoInfo.key}`);
-        currentRepoKey = repoInfo.key; // Set the state to prevent re-running
-        fetchAndDisplaySize(repoInfo); // Execute the main logic
+        currentRepoKey = repoInfo.key;
+        fetchAndDisplaySize(repoInfo);
     }
 
-    // --- Initialization ---
     function init() {
         log("Script initializing...");
         GM_registerMenuCommand('Set/Update GitHub PAT for Repo Size', () => {
              const newPat = prompt('Enter your GitHub PAT (needs `repo` scope):', GM_getValue(PAT_KEY, ''));
              if (newPat !== null) setPAT(newPat);
         });
-
-        // The observer's only job is to call the gatekeeper function.
         observer = new MutationObserver(run);
         observer.observe(document.body, { childList: true, subtree: true });
-
-        // Initial run in case the page is already fully loaded.
         run();
     }
 
