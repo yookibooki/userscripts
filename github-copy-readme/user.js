@@ -18,13 +18,13 @@
   const API = "https://api.github.com";
   const TOKEN_KEY = "gh_pat";
 
-  const REPO = (() => {
+  const parseRepo = () => {
     const p = location.pathname.split("/").filter(Boolean);
     if (p.length < 2) return null;
     const skip = ["settings", "organizations", "orgs", "users", "sponsors", "notifications", "explore", "topics", "trending", "collections", "events", "features", "security", "pulls", "issues", "marketplace", "apps", "codespaces", "discussions"];
     if (skip.includes(p[0])) return null;
     return { owner: p[0], repo: p[1] };
-  })();
+  };
 
   let inFlight = false;
 
@@ -49,6 +49,7 @@
     );
 
   async function copyReadme() {
+    const REPO = parseRepo();
     if (!REPO || inFlight) return;
 
     let token = GM_getValue(TOKEN_KEY, "");
@@ -62,7 +63,13 @@
     try {
       const res = await req(`${API}/repos/${REPO.owner}/${REPO.repo}/readme`, token);
       if (res.status !== 200 || !res.response?.content) {
-        alert("README not found");
+        alert(
+          res.status === 401 || res.status === 403
+            ? `GitHub API error ${res.status}: token rejected or expired`
+            : res.status === 404
+              ? "README not found in this repository"
+              : `GitHub API error ${res.status}`
+        );
         return;
       }
       GM_setClipboard(decode(res.response.content), "text");

@@ -10,6 +10,6 @@
 
 (function() {
     'use strict';
-    const newUrl = 'https://freedium.cfd' + window.location.pathname;
+    const newUrl = 'https://freedium-mirror.cfd' + window.location.pathname;
     window.location.replace(newUrl);
 })();

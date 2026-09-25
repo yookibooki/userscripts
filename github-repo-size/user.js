@@ -84,6 +84,8 @@
             pat = newPat.trim();
             GM_setValue(PAT_KEY, pat);
             log('GitHub PAT saved.');
+            currentRepoKey = null;
+            updateDisplay('loading', STYLE_LOADING, true);
             run();
             return true;
         } else {
